@@ -15,7 +15,7 @@ situation from the skill's description. There is no command to type for those.
 
 | Mode | Triggered by | What it does |
 |---|---|---|
-| Create | **Recognised** — a brainstorm concludes the scope exceeds one cycle, or you say up front that it does | Cuts the program into cycles, writes `docs/superpowers/cycles/<topic>.md` and its board, then stops without dispatching cycle 1 |
+| Create | **Recognised** — a brainstorm concludes the scope exceeds one cycle, or you say up front that it does | Cuts the program into cycles, writes `docs/superpowers/cycles/<program>/cycles.md` and its board, then stops without dispatching cycle 1 |
 | Update | **Recognised** — a cycle just transitioned (spec committed, plan committed, MR opened, merged) and the records are now stale | Writes the transition into the cycles file and the board, in the same commit as the work that caused it |
 | Resume | `/cycles continue` (also `resume`) | Picks a program back up in a fresh session, landing on the highest in-flight cycle |
 | Handoff | `/cycles handoff` (also `finalize`, `checkpoint`) | Reconciles the records against git before a session is cleared |
