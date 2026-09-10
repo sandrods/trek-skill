@@ -65,18 +65,45 @@ what outlives the cycle goes up to `trek.md` as one line pointing back.
 
 | Mode | How it starts | What it does |
 |---|---|---|
-| **Create** | A brainstorm concludes the scope exceeds one cycle, or you say so up front | Asks boundary questions, presents candidate cuts, writes the trek folder and publishes the board. Stops without dispatching cycle 1. |
+| **Start** | `/trek start` | A brainstorm at the altitude of the cut: asks boundary questions, presents candidate cuts, writes the trek folder and publishes the board. Stops without dispatching cycle 1. |
 | **Dispatch** | Resume finds a cycle whose dependencies are done | Creates the cycle folder and hands brainstorming, then writing-plans, then the executor their target paths and the findings file. |
 | **Update** | A cycle transitions, or a rule, fact or question changes | Replaces the record, appends the log, republishes the board — in the same commit as the work that caused it. At merge, promotes findings. When the last cycle closes, closes the program. |
 | **Resume** | `/trek continue` | Reads `trek.md`, lands on the highest in-flight cycle, and picks up from there. |
 | **Handoff** | `/trek handoff` | Before a session is cleared: reconciles the records against git, writes down what lived only in the conversation, refreshes the next-step note. Never moves a status on its own. |
 
-Create and Update fire when Claude recognises the situation. Resume and Handoff you
-type. Dispatch is what Resume does when the next cycle is ready.
+Start, Resume and Handoff you type: begin, pick up, put down. Update fires when Claude
+recognises a transition. Dispatch is what Resume does when the next cycle is ready. If
+a plain brainstorm discovers mid-way that the scope is several cycles, it hands over to
+Start; that is the safety net, not the way in.
 
 **Update is the one that gets missed.** It has to fire mid-work, while Claude is busy
 with the thing that caused the transition. Handoff exists to catch what Update let
 slip. If it keeps finding drift, ask for the update at the moment of the transition.
+
+## Walking a trek
+
+1. `/trek start`. You describe the program. Claude asks boundary questions, presents
+   candidate cuts, you pick one. Claude writes `docs/treks/<topic>/`, publishes the
+   board, commits. Stops.
+2. In a fresh session, `/trek continue`. Claude dispatches cycle 1: creates its folder,
+   runs the brainstorm. Spec committed, record updated.
+3. You approve the spec. Claude writes the plan. Plan committed, record updated.
+4. Claude starts executing the plan on a branch. Facts learned go to the cycle's
+   findings file.
+5. Context runs out mid-plan. `/trek handoff`. `/clear`. `/trek continue`. Claude lands
+   on `executing`, resumes at the first task without commits.
+6. Execution finishes. MR opened. Record updated: cycle 1 `in review`.
+7. MR merged. In a fresh session, `/trek continue`. Claude sees the merge: cycle 1
+   `done`, findings promoted to one-line facts in `trek.md`. Cycle 2's dependency is
+   met, so it dispatches cycle 2. Back to step 3.
+8. Last cycle merges. `/trek continue`. Program `closed`. Claude reports the rules and
+   facts that outlive it, for the feature doc you write when the feature is stable.
+
+Three things you ever type: `/trek start`, `/trek continue`, `/trek handoff`.
+
+The `/trek handoff` → `/clear` → `/trek continue` sequence works at any point, not only
+mid-plan. Whenever the session feels heavy, put the trek down and pick it up clean: the
+records are what carry it, not the conversation.
 
 ## Where things live, and where they don't
 
@@ -96,8 +123,8 @@ slip. If it keeps finding drift, ask for the update at the moment of the transit
 git clone https://github.com/sandrods/trek-skill ~/.claude/skills/trek
 ```
 
-Then ask Claude to use the `trek` skill, or type `/trek continue` in a repository that
-has one.
+Then `/trek start` to cut a program, `/trek continue` to pick one up in a fresh session,
+`/trek handoff` before clearing a session.
 
 Requires the [Superpowers](https://github.com/obra/superpowers) skills —
 `brainstorming`, `writing-plans` and the executor skills — and uses Claude Code's

@@ -1,6 +1,6 @@
 ---
 name: trek
-description: Use when a program is too large to finish in one brainstorm-plan-execute-merge cycle, when a brainstorm reports the scope needs decomposing before designing, when a cycle has transitioned (spec committed, plan committed, execution started, MR opened, merged, superseded) and the trek's record or published board is now stale, when a fact about an external system was learned mid-cycle and needs a durable place, when asked to continue or resume a program in a fresh session — e.g. `/trek continue` — or when about to clear or end a session with a program still in flight — e.g. `/trek handoff`.
+description: Use when asked to start a program too large to finish in one brainstorm-plan-execute-merge cycle — e.g. `/trek start` — or when a brainstorm reports the scope needs decomposing before designing, when a cycle has transitioned (spec committed, plan committed, execution started, MR opened, merged, superseded) and the trek's record or published board is now stale, when a fact about an external system was learned mid-cycle and needs a durable place, when asked to continue or resume a program in a fresh session — e.g. `/trek continue` — or when about to clear or end a session with a program still in flight — e.g. `/trek handoff`.
 ---
 
 # Trek
@@ -23,8 +23,9 @@ Two facts about the records govern everything below:
 
 ## When to Use
 
-- A brainstorm concludes the scope exceeds one cycle
-- You know a program is multi-cycle before brainstorming starts
+- Asked to start a program known to be multi-cycle (`/trek start`)
+- A brainstorm concludes the scope exceeds one cycle — the safety net for a program
+  nobody recognised up front
 - A cycle transitioned and the records no longer reflect reality
 - A fact about a system you do not own was learned while working a cycle
 - Asked to continue or resume a program (`/trek continue`), typically in a fresh session
@@ -140,7 +141,11 @@ Cycle-scoped content never leaves it.
   A gotcha about the project's own code is not a finding; it belongs in the project's
   documentation or in a fix.
 
-## Mode 1 — Create
+## Mode 1 — Start
+
+Invoked with `start` (also `new` / `create`), or when a brainstorm's scope check finds
+several cycles where one was expected. It is a brainstorm at the altitude of the cut:
+it understands the problem just enough to cut it, and stops there.
 
 1. **Read the sources** — the request, any written input, the repo. Copy an
    out-of-repo or gitignored input into the trek folder.
@@ -153,7 +158,8 @@ Cycle-scoped content never leaves it.
    first line, the cut.
 5. **Create the board**, publish it, write the returned URL into the header.
 6. **Commit** the folder.
-7. **STOP.** Do not dispatch cycle 1.
+7. **STOP.** Do not dispatch cycle 1. Starting a cycle is a separate decision and a
+   separate brainstorm.
 
 ## Dispatching a Cycle
 
@@ -294,4 +300,4 @@ transcript is not a record, run Mode 4.
 | Spec or plan saved to the single-cycle default paths | The trek's work is scattered; resume cannot find the cycle's files |
 | Bare `plan.md` in every cycle folder | Every cycle shares one SDD ledger; the executor resumes the wrong tasks |
 | `Out` left empty | Cycle 1 quietly absorbs cycle 2 halfway through |
-| Detail questions asked during Create | You design cycle 3 before building cycle 1 |
+| Detail questions asked during Start | You design cycle 3 before building cycle 1 |
