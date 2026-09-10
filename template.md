@@ -1,7 +1,7 @@
 # Cycles — <program>
 
 **Decomposed on:** <date> · **Sources:** <documents governing this program>
-**Board:** <artifact URL — every republish of `<topic>-board.html` passes this as `url:`>
+**Board:** <artifact URL — every republish of `board.html` passes this as `url:`>
 
 ## Why this cut
 
@@ -21,7 +21,7 @@ Update **at the moment of the transition**, in the same commit that caused it:
 | MR opened | number in `Artifacts` · status → `in review` | refresh + republish to `Board` URL |
 | merged | status → `done` + fill in `Surprises` | refresh + republish to `Board` URL |
 
-The board (`<topic>-board.html`, same directory) travels in the same commit as the
+The board (`board.html`, same directory) travels in the same commit as the
 cycles-file update. It is a view over this file plus the executing cycle's SDD
 ledger — when they disagree, this file wins.
 
@@ -55,7 +55,7 @@ waiting on third parties>
 
 **Done when:** <the verification story: how you demonstrate this cycle is finished>
 
-**Artifacts:** spec — · plan — · branch — · MR —
+**Artifacts:** spec — · plan — · branch — · MR —  (spec and plan paths relative to this directory, e.g. `1-<slug>/1-<slug>-spec.md`)
 
 **Surprises:** <filled in at merge: what came out different from what was predicted,
 and what the next cycle inherits because of it>
