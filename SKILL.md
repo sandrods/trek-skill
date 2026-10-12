@@ -180,15 +180,17 @@ brainstorm only; the plan and the build follow this section.
    partner to approve it.
 5. **Build.** Once the plan is approved, cut the branch from the trek line (in a
    worktree), run Mode 2 (→ `executing`), and work the ledger top to bottom:
-   - Set the row to `running`, then dispatch **one fresh implementer agent per task**,
-     briefed from `templates/implementer-brief.md` (sonnet unless the project says
-     otherwise). Never implement a task in the main session: keeping its context
-     light is the point of dispatching.
-   - Read the report and the commit's file list — not the diff. Set the row to
-     `done` with the commit, and put any reported deviation in its note. A deviation
-     that contradicts the spec, or a `BLOCKED`, stops the build: bring it to your
-     human partner.
-   - Commit the ledger change and refresh the board while the next implementer runs.
+   - Dispatch **one fresh implementer agent per task**, briefed from
+     `templates/implementer-brief.md` (sonnet unless the project says otherwise).
+     Never implement a task in the main session: keeping its context light is the
+     point of dispatching.
+   - Read the report and the commit's file list — not the diff. A deviation that
+     contradicts the spec, or a `BLOCKED`, stops the build: bring it to your human
+     partner.
+   - In one commit, set the finished row to `done` with its commit and any reported
+     deviation in its note, and the next row to `running`. Then dispatch the next
+     implementer, and republish the board while it runs. Never commit while an
+     implementer is working in the same worktree: the two commits collide.
 6. **Final review.** When every task row is `done`, dispatch one review agent briefed
    from `templates/final-review-brief.md` (opus) over the whole branch. Bring its
    findings to your human partner; the fixes they accept go to one implementer agent,
