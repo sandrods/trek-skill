@@ -194,8 +194,7 @@ export const register: Register = on => {
         {text}
       </Text>
     )
-    const cycleRow = (c: Cycle) => {
-      const isLead = c.status === 'executing'
+    const cycleRow = (c: Cycle, isLead: boolean) => {
       return (
         <Text wrap="truncate-end">
           {'  '}
@@ -210,7 +209,7 @@ export const register: Register = on => {
     }
     const ledgerRow = (r: LedgerRow) => (
       <Text wrap="truncate-end">
-        {'  '}
+        {'       '}
         <Text color={look(r.status).color}>{look(r.status).glyph}</Text>{' '}
         <Text dimColor>{r.id.padStart(2)}</Text>{' '}
         <Text bold={r.status === 'running'} dimColor={r.status === 'pending'}>{r.task}</Text>
@@ -235,22 +234,27 @@ export const register: Register = on => {
                 {trek.isCurrent ? <Text color="claude"> ← this branch</Text> : ''}
               </Text>
               {isOpen && heading('Cycles')}
-              {isOpen && trek.cycles.map(cycleRow)}
-              {steps && trek.lead && (
-                <Box flexDirection="column">
-                  {heading(`Ledger · cycle ${trek.lead.id}`)}
-                  <Text>
-                    {'  '}
-                    <Text color="success">{filled}</Text>
-                    <Text color="inactive">{empty}</Text>{' '}
-                    <Text color={steps.current ? look(steps.current.status).color : 'success'} bold>
-                      {steps.total > 0 ? `${steps.done}/${steps.total} · ` : ''}
-                      {steps.label}
-                    </Text>
-                  </Text>
-                  {(trek.ledger ?? []).map(ledgerRow)}
-                </Box>
-              )}
+              {isOpen &&
+                trek.cycles.map(c => {
+                  const isLead = c.id === trek.lead?.id
+                  if (!isLead || !steps) return cycleRow(c, isLead)
+                  // The lead cycle carries its ledger nested beneath it.
+                  return (
+                    <Box flexDirection="column">
+                      {cycleRow(c, true)}
+                      <Text>
+                        {'       '}
+                        <Text color="success">{filled}</Text>
+                        <Text color="inactive">{empty}</Text>{' '}
+                        <Text color={steps.current ? look(steps.current.status).color : 'success'} bold>
+                          {steps.total > 0 ? `${steps.done}/${steps.total} · ` : ''}
+                          {steps.label}
+                        </Text>
+                      </Text>
+                      {(trek.ledger ?? []).map(ledgerRow)}
+                    </Box>
+                  )
+                })}
               {isOpen && questions.length > 0 && heading('Open questions')}
               {isOpen &&
                 questions.map(q => (
