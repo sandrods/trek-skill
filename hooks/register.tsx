@@ -11,6 +11,7 @@ const treks = atom({ plugin: 'trek', key: 'treks' } as const, [])
 // Reads every trek folder under the root. A folder without a readable trek.md is skipped.
 async function load($: EngineInterface): Promise<Trek[]> {
   const root = await trekRoot($)
+  const branch = await currentBranch($)
   const entries = await $.fs.list(root).catch(() => [])
   const found: Trek[] = []
 
@@ -21,7 +22,8 @@ async function load($: EngineInterface): Promise<Trek[]> {
 
     const record = parseTrek(text)
     const lead = leadCycle(record.cycles)
-    const trek: Trek = { ...record, topic: entry.name, lead }
+    const isCurrent = branch !== undefined && record.branches.includes(branch)
+    const trek: Trek = { ...record, topic: entry.name, lead, isCurrent }
 
     if (lead?.status === 'executing') {
       const rel = planPath(lead)
@@ -34,6 +36,18 @@ async function load($: EngineInterface): Promise<Trek[]> {
     found.push(trek)
   }
   return found
+}
+
+// The checked-out branch, read from HEAD; `.git` is a file pointing at the gitdir in a worktree.
+async function currentBranch($: EngineInterface): Promise<string | undefined> {
+  let head = await $.fs.read('.git/HEAD').catch(() => undefined)
+  if (typeof head !== 'string') {
+    const pointer = await $.fs.read('.git').catch(() => undefined)
+    const gitdir = typeof pointer === 'string' ? pointer.match(/^gitdir:\s*(.+)$/m)?.[1]?.trim() : undefined
+    if (gitdir === undefined) return undefined
+    head = await $.fs.read(`${gitdir}/HEAD`).catch(() => undefined)
+  }
+  return typeof head === 'string' ? head.match(/^ref: refs\/heads\/(.+)$/m)?.[1]?.trim() : undefined
 }
 
 // docs/treks/ unless the project's CLAUDE.md states `Trek root: <path>`.
@@ -117,7 +131,7 @@ export const register: Register = on => {
   }).catch(($, e, next) => next(e))
 
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
-    const open = (await read($, treks)).filter(t => t.status === 'open')
+    const open = (await read($, treks)).filter(t => t.status === 'open' && t.isCurrent)
     if (e.props.hasSurvey || open.length === 0) return next(e)
 
     const { Box, Text } = $.ui.resolve(e)
@@ -207,6 +221,7 @@ export const register: Register = on => {
                 <Text color={isOpen ? 'claude' : 'inactive'} bold>▌{trek.topic}</Text>{' '}
                 {chip(isOpen ? 'open' : trek.status === 'closed' ? 'done' : trek.status)}
                 {trek.title ? <Text dimColor> {trek.title}</Text> : ''}
+                {trek.isCurrent ? <Text color="claude"> ← this branch</Text> : ''}
               </Text>
               {isOpen && heading('Cycles')}
               {isOpen && trek.cycles.map(cycleRow)}

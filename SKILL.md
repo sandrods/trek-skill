@@ -111,7 +111,8 @@ carrying an invented earlier date.
 
 The question "where are we?" is answered by a Claude Code mod that ships in this
 skill's folder (`.claude-plugin/`, `hooks/`) and draws from the records on disk of the
-checkout the session runs in: a band above the prompt for each open trek, and
+checkout the session runs in: a band above the prompt for the open trek whose record
+names the checked-out branch, and
 `/trek-status` for a pane with every cycle, the executing cycle's ledger and the open
 questions. There is nothing to publish or refresh: keeping the records current is
 keeping the view current.
@@ -123,7 +124,9 @@ It parses these shapes, so they are kept exact:
 - `- **Q<n>** (<owner>) — …` lines under `## Open questions` (a line whose text starts
   `answered`, `closed`, `resolved` or `superseded` counts as closed);
 - the executing cycle's plan at `cycles/<n>-<slug>/<n>-<slug>-plan.md` (or the `plan`
-  path its `Artifacts` names when it has no folder), its table under `## Ledger`.
+  path its `Artifacts` names when it has no folder), its table under `## Ledger`;
+- ``branch `<name>` `` in `Artifacts` (the trek line included), which ties a checkout to
+  its trek.
 
 ## `cycles/<n>-<slug>/` — the cycle folder
 

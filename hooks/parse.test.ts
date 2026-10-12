@@ -61,6 +61,7 @@ test('reads the header, the cycles and the open questions of trek.md', () => {
     ['Q1', 'Sandro, with SRH/DBA', true],
     ['Q2', 'Sandro', false],
   ])
+  expect(trek.branches).toEqual(['incluir-marcacao'])
   expect(trek.questions[0]?.text).toBe('production `INSERT` on a table; gates cycles 2 and 4.')
 })
 

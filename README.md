@@ -53,7 +53,7 @@ superseded item keeps its handle with a one-line pointer to what replaced it.
 
 **The status mod** answers "where are we?" without a second record. The skill's folder
 is also a Claude Code plugin: it reads the records of the checkout a session runs in and
-draws a band above the prompt for each open trek (cycle track, lead cycle, ledger
+draws a band above the prompt for the trek the checked-out branch belongs to (cycle track, lead cycle, ledger
 progress, open questions), and `/trek-status` opens a pane with every cycle, the
 executing cycle's ledger and the open questions. It draws from the files, so it cannot
 disagree with them.

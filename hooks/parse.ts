@@ -15,6 +15,7 @@ export function parseTrek(text: string): TrekRecord {
     status,
     cycles: parseCycles(sections.get('Cycles') ?? ''),
     questions: parseQuestions(sections.get('Open questions') ?? ''),
+    branches: [...text.matchAll(/branch\s+`([^`]+)`/g)].map(m => m[1] ?? ''),
   }
 }
 
