@@ -239,12 +239,26 @@ commit as the work that caused the transition**, never separately.
 | rule / fact / question added or superseded outside a merge | the line, or the handle's body replaced with its pointer | one line |
 | last cycle `done` or `superseded` | program status → `closed` | one line |
 
+After a merge and after close, remove the worktree that is done (below).
+
 
 **On close**, report — do not write — the rules and facts in `trek.md` that outlive
 the program. They are the raw material for a permanent feature document in the
 project's own documentation and language. Writing that document is a separate act,
 done when your human partner judges the feature stable; when it exists, record its
 path in the header. The trek folder stays as the archive. Nothing is deleted.
+
+**Worktrees are removed where they were created.** This skill creates them (Branches)
+and removes them; nothing else does either.
+
+- **At merge**, once the merged transition is committed on the trek line: move the
+  session to the trek line's worktree, then remove the cycle's worktree and delete the
+  cycle branch, local and remote (the MR may already have deleted the remote one).
+- **At close**, once `closed` is committed: move the session out to the project's main
+  checkout, then remove the trek line's worktree. The branch `treks/<topic>/main` stays
+  until it has merged into the project's main line.
+- Never remove a worktree with uncommitted changes or unpushed commits, nor one another
+  session is working in: report it and stop.
 
 ## Mode 3 — Resume
 
