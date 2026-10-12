@@ -163,7 +163,7 @@ export const register: Register = on => {
           const [filled, empty] = bar(steps?.done ?? 0, steps?.total ?? 0)
           return (
             <Text wrap="truncate-end">
-              <Text color="claude" bold>▌{trek.topic}</Text>{'  '}
+              <Text color="claude" bold>{trek.topic}</Text>{'  '}
               {trek.cycles.map(c => (
                 <Text color={look(c.status).color}>{look(c.status).glyph}</Text>
               ))}{'  '}
