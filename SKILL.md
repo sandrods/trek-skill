@@ -48,20 +48,19 @@ docs/treks/<topic>/
   cycles/
     1-<cycle-slug>/              created at dispatch, one per cycle
       1-<cycle-slug>-spec.md     brainstorming's output
-      1-<cycle-slug>-plan.md     writing-plans' output
+      1-<cycle-slug>-plan.md     the plan, with the ledger table
       1-<cycle-slug>-findings.md facts learned while working the cycle
     2-<cycle-slug>/
 ```
 
 - The record's own location is the trek folder, so paths inside it are relative to it:
   a cycle's spec is `cycles/1-<slug>/1-<slug>-spec.md`.
-- Files inside a cycle folder carry the folder's name as a prefix. The executor keys
-  its ledger on the plan's basename (`.superpowers/sdd/<plan-basename>/`), so bare
-  `plan.md` in every cycle would merge every cycle's task progress into one ledger.
+- Files inside a cycle folder carry the folder's name as a prefix, so a path or a
+  board line names its cycle on its own.
 - A cycle that splits gets `1a-<slug>/` and `1b-<slug>/`. Numbers are handles and
   are never reused or renumbered; a superseded cycle keeps its number and its folder.
-- Brainstorming and writing-plans have their own default paths for single-cycle work.
-  When dispatching them for a cycle, hand them the exact target path.
+- Brainstorming has its own default path for single-cycle work. When dispatching it
+  for a cycle, hand it the exact target path.
 - A brainstorm may start from a written input. The input is not part of the trek: it
   lives wherever it was written, the spec names it under its sources, and **nothing is
   ever written to it after the brainstorm consumed it.** An input outside the repo or
@@ -94,7 +93,7 @@ skill holds them.
   when, and where the old text lives. The specimen this skill was rebuilt from grew
   600-word cycle entries because every status change appended its reason.
 - **Blocking is not a status.** Read it off `Depends on` plus the other cycles'
-  statuses. Task progress is never copied in; it lives in the SDD ledger.
+  statuses. Task progress is never copied in; it lives in the plan's ledger.
 
 ## `log.md` — the history
 
@@ -115,8 +114,8 @@ A single page for the question "where are we?", published as a Claude artifact.
 
 - **It contains no text that does not exist in `trek.md` or `log.md`.** A cycle card
   is the cycle's name, status, goal sentence and why sentence, copied verbatim. The
-  ledger section renders the executing cycle's SDD ledger rows by task name, and is
-  absent when no cycle is executing. The history section renders `log.md`. The
+  ledger section renders the executing cycle's ledger table (task, status, commit),
+  and is absent when no cycle is executing. The history section renders `log.md`. The
   blockers section renders open questions. A card that is too long means a `trek.md`
   field is too long; fix the record.
 - **One URL for its whole life**, stored in the `trek.md` header. Every republish
@@ -131,12 +130,15 @@ Cycle-scoped content never leaves it.
 - **Spec.** Names its sources, including any written input. Cites governing rules by
   `trek.md` handle. Frozen once approved. A re-brainstorm replaces it; git keeps the
   old one and `log.md` records the event.
-- **Plan.** Frozen once approved. Progress lives in `.superpowers/sdd/<plan-basename>/`.
+- **Plan.** Filled from `templates/plan.md`: a ledger table, then 3–5 coarse tasks,
+  each a goal, the files, the behaviours to test and a done-when — no code, no test
+  bodies, no steps. About a page. The tasks are frozen once approved; only the ledger
+  table changes after that, and only the main session writes it.
 - **Findings.** Created at dispatch from `templates/findings.md`, so the file exists
   before anyone has something to put in it. Holds facts about systems the project does
   not own — a legacy database's real shape, what a package actually does, a count that
   was expensive to obtain — at any stage, at any length, dated and appended. Every
-  task prompt sent to an executor names this file as the destination for such facts:
+  implementer brief names this file as the destination for such facts:
   a fact left in a subagent's report is lost when the report is. It is read at merge.
   A gotcha about the project's own code is not a finding; it belongs in the project's
   documentation or in a fix.
@@ -163,19 +165,40 @@ it understands the problem just enough to cut it, and stops there.
 
 ## Dispatching a Cycle
 
-Take the first cycle whose dependencies all read `done`.
+Take the first cycle whose dependencies all read `done`. Superpowers is used for the
+brainstorm only; the plan and the build follow this section.
 
 1. Create `cycles/<n>-<slug>/` with `<n>-<slug>-findings.md` from the template.
 2. Invoke superpowers:brainstorming with the entry as the scope statement, the spec's
    target path, the rules and facts it lists as governing, and the findings file as
    the destination for facts learned. Its `Scope` / `Out` / `Done when` pre-answer
    brainstorming's scope check: this is one cycle because someone already cut it.
+   Brainstorming ends by offering writing-plans; do not invoke it — step 4 replaces it.
 3. When the spec is committed, run Mode 2 (status → `spec`).
-4. Once the spec is approved, invoke superpowers:writing-plans with the plan's target
-   path. When the plan is committed, run Mode 2 (status → `plan`).
-5. Execution runs under the executor skill the plan's header names. Every task prompt
-   it dispatches names the findings file. Mode 2 at start (→ `executing`), at MR
-   (→ `in review`), at merge (→ `done`).
+4. **Plan.** Once the spec is approved, write `<n>-<slug>-plan.md` yourself from
+   `templates/plan.md`. Commit it, run Mode 2 (status → `plan`), and ask your human
+   partner to approve it.
+5. **Build.** Once the plan is approved, cut the branch from the trek line (in a
+   worktree), run Mode 2 (→ `executing`), and work the ledger top to bottom:
+   - Set the row to `running`, then dispatch **one fresh implementer agent per task**,
+     briefed from `templates/implementer-brief.md` (sonnet unless the project says
+     otherwise). Never implement a task in the main session: keeping its context
+     light is the point of dispatching.
+   - Read the report and the commit's file list — not the diff. Set the row to
+     `done` with the commit, and put any reported deviation in its note. A deviation
+     that contradicts the spec, or a `BLOCKED`, stops the build: bring it to your
+     human partner.
+   - Commit the ledger change and refresh the board while the next implementer runs.
+6. **Final review.** When every task row is `done`, dispatch one review agent briefed
+   from `templates/final-review-brief.md` (opus) over the whole branch. Bring its
+   findings to your human partner; the fixes they accept go to one implementer agent,
+   briefed with those findings, and are recorded in the review row's note. Then set
+   the review row to `done`.
+7. MR or merge as the project does it: Mode 2 at MR (→ `in review`) and at merge
+   (→ `done`).
+
+There is no review agent per task. A wrong turn early in the plan is caught by the
+implementer's own tests, by your reading of each report, and finally by the review.
 
 ## Mode 2 — Update
 
@@ -209,9 +232,9 @@ an in-flight cycle always outranks starting a new one:
 
 | Highest cycle status found | Next action |
 |---|---|
-| `executing` | `Artifacts` names the branch; find its worktree and the ledger at `.superpowers/sdd/<plan-basename>/progress.md`, then resume with the executor skill the plan's header names. No worktree or ledger → the branch's `git log` is the record; resume at the first task without commits. |
+| `executing` | `Artifacts` names the branch; find its worktree and read the plan's ledger. A `running` row means a session died mid-task: check the branch's `git log` for its commit and fix the row first. Resume Dispatching step 5 at the first row not `done` (step 6 if only the review remains). |
 | `in review` | Check the MR: merged → run Mode 2's merged transition, then re-enter this table; still open → report what the review waits on and stop. |
-| `plan` | Invoke the executor skill the plan's header names, on the plan path. |
+| `plan` | The plan awaits approval — ask for it; once approved, continue Dispatching from step 5. |
 | `spec` | The spec awaits your human partner's review — ask for it; once approved, continue Dispatching from step 4. |
 | only `not started` remain, dependencies `done` | Dispatch the next cycle. |
 | everything `done`, `superseded` or externally gated | Report the end state and what gates the rest; nothing to dispatch. |
@@ -232,7 +255,8 @@ is still in flight — report the discrepancy and ask.
 
 1. **Reconcile against git.** Commits since `trek.md` was last touched; branch and
    merge state per cycle; files in cycle folders that `Artifacts` does not name; the
-   executing cycle's ledger. Anything missed is a **missed Mode 2 update** — say so.
+   executing cycle's ledger against the branch's commits. Anything missed is a
+   **missed Mode 2 update** — say so.
 2. **Update `trek.md` and `log.md`** for what is genuinely stale, in Mode 2's format.
 3. **Sweep for session-only state.** A fact that lives only in the conversation goes
    to the in-flight cycle's findings file. A pointer to a path outside the repo is
@@ -271,6 +295,8 @@ routinely finds drift, the in-the-moment discipline is what needs fixing.
 - "I'll note the new reason under the old status so nothing is lost"
 - "This finding is worth a paragraph in `trek.md`"
 - "I'll put the fact in my report; the orchestrator will pick it up"
+- "This task is small, I'll implement it here instead of dispatching"
+- "The plan would be clearer with the code written out"
 - "The cycle is superseded, I'll remove the entry to keep the file clean"
 - "Brainstorming has its own default path, I'll let it save there"
 - "The input doc is the natural place for this new decision"
@@ -278,7 +304,8 @@ routinely finds drift, the in-the-moment discipline is what needs fixing.
 - "The session is ending, but it's all in the transcript"
 
 In order: hand off to this skill · split in place · stop · keep it coarse · replace ·
-one line, pointer to the findings file · write the findings file · keep the handle ·
+one line, pointer to the findings file · write the findings file · dispatch it ·
+the spec holds the decisions, the implementer the code · keep the handle ·
 pass the target path · the input is frozen, this goes in `trek.md` · update now · a
 transcript is not a record, run Mode 4.
 
@@ -291,13 +318,15 @@ transcript is not a record, run Mode 4.
 | Reason appended under a status instead of replacing it | Entry size tracks how often the cycle was re-decided, not what it is |
 | Cycle design written into `trek.md` | A pointer file nobody can afford to read on resume |
 | New decisions written into the brainstorm input | A frozen source becomes the only place the rules live, and rots |
-| Fact left in an executor's report | Lost when the report is; the next cycle pays to rediscover it |
+| Fact left in an implementer's report | Lost when the report is; the next cycle pays to rediscover it |
+| Plan written with code and test bodies | The plan becomes the build, costs more context than the build, and freezes choices the implementer should make |
+| Ledger row not updated after a task | Resume redoes a finished task, and the board shows the wrong progress |
 | Superseded cycle removed from the record | Numbers stop being handles; every citation of it dangles |
 | `superseded` without its why sentence | Reads as a mistake on the board |
 | Text on the board that is not in `trek.md` or `log.md` | A second record, and the wrong one |
 | Board republished without `url:` | Duplicate artifact; stakeholders keep the stale link |
 | Transition committed without `log.md` and the board | History has a hole; the visible answer is wrong |
 | Spec or plan saved to the single-cycle default paths | The trek's work is scattered; resume cannot find the cycle's files |
-| Bare `plan.md` in every cycle folder | Every cycle shares one SDD ledger; the executor resumes the wrong tasks |
+| Bare `plan.md` in every cycle folder | Paths and board lines stop naming their cycle |
 | `Out` left empty | Cycle 1 quietly absorbs cycle 2 halfway through |
 | Detail questions asked during Start | You design cycle 3 before building cycle 1 |

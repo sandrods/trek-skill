@@ -4,10 +4,10 @@ A [Claude Code](https://claude.com/claude-code) skill for a program too large to
 in one brainstorm → plan → execute → merge cycle.
 
 A **trek** is one program walked in several cycles. The skill cuts the program into
-cycles, keeps a record of where the trek stands, and hands each cycle to the
-[Superpowers](https://github.com/obra/superpowers) skills that design and build it. It
-exists so that a fresh session, weeks in, can read one short file and know what to do
-next.
+cycles, keeps a record of where the trek stands, and walks each cycle through design,
+plan and build: the design by the [Superpowers](https://github.com/obra/superpowers)
+brainstorming skill, the plan and the build by the skill itself. It exists so that a
+fresh session, weeks in, can read one short file and know what to do next.
 
 ## The problem it solves
 
@@ -37,7 +37,7 @@ docs/treks/<topic>/
   cycles/
     1-<slug>/
       1-<slug>-spec.md             the cycle's brainstorm output
-      1-<slug>-plan.md             the cycle's plan
+      1-<slug>-plan.md             the cycle's plan and its ledger
       1-<slug>-findings.md         facts learned while working the cycle
     2-<slug>/
       ...
@@ -57,16 +57,21 @@ It contains no text that is not already in `trek.md` or `log.md`; when they disa
 the files win.
 
 **The cycle folder** holds everything cycle-scoped. The findings file is created empty
-at dispatch and named in every task prompt, so a fact about a legacy database or an
-external package has somewhere to go the moment it is found. At merge it is read, and
-what outlives the cycle goes up to `trek.md` as one line pointing back.
+at dispatch and named in every implementer brief, so a fact about a legacy database or
+an external package has somewhere to go the moment it is found. At merge it is read,
+and what outlives the cycle goes up to `trek.md` as one line pointing back.
+
+**The plan** is about a page: a ledger table, then 3–5 coarse tasks, each a goal, the
+files, the behaviours to test and a done-when. No code. The spec holds the decisions;
+the implementer writes the code. The ledger table (task · status · commit · note) is
+what resume reads and what the board shows.
 
 ## How it flows
 
 | Mode | How it starts | What it does |
 |---|---|---|
 | **Start** | `/trek start` | A brainstorm at the altitude of the cut: asks boundary questions, presents candidate cuts, writes the trek folder and publishes the board. Stops without dispatching cycle 1. |
-| **Dispatch** | Resume finds a cycle whose dependencies are done | Creates the cycle folder and hands brainstorming, then writing-plans, then the executor their target paths and the findings file. |
+| **Dispatch** | Resume finds a cycle whose dependencies are done | Creates the cycle folder and runs the brainstorm; once the spec is approved, writes the short plan; once that is approved, builds it with one fresh implementer agent per task, then one final review agent over the whole branch. |
 | **Update** | A cycle transitions, or a rule, fact or question changes | Replaces the record, appends the log, republishes the board — in the same commit as the work that caused it. At merge, promotes findings. When the last cycle closes, closes the program. |
 | **Resume** | `/trek continue` | Reads `trek.md`, lands on the highest in-flight cycle, and picks up from there. |
 | **Handoff** | `/trek handoff` | Before a session is cleared: reconciles the records against git, writes down what lived only in the conversation, refreshes the next-step note. Never moves a status on its own. |
@@ -87,12 +92,14 @@ slip. If it keeps finding drift, ask for the update at the moment of the transit
    board, commits. Stops.
 2. In a fresh session, `/trek continue`. Claude dispatches cycle 1: creates its folder,
    runs the brainstorm. Spec committed, record updated.
-3. You approve the spec. Claude writes the plan. Plan committed, record updated.
-4. Claude starts executing the plan on a branch. Facts learned go to the cycle's
-   findings file.
+3. You approve the spec. Claude writes the short plan. Plan committed, record updated.
+4. You approve the plan. Claude cuts the branch and dispatches one implementer agent per
+   task, ticking the ledger and refreshing the board after each. The main session reads
+   reports, not diffs. Facts learned go to the cycle's findings file.
 5. Context runs out mid-plan. `/trek handoff`. `/clear`. `/trek continue`. Claude lands
-   on `executing`, resumes at the first task without commits.
-6. Execution finishes. MR opened. Record updated: cycle 1 `in review`.
+   on `executing` and resumes at the first ledger row not `done`.
+6. All tasks done. One review agent reads the whole branch against the spec; you pick
+   the fixes, one agent makes them. MR opened. Record updated: cycle 1 `in review`.
 7. MR merged. In a fresh session, `/trek continue`. Claude sees the merge: cycle 1
    `done`, findings promoted to one-line facts in `trek.md`. Cycle 2's dependency is
    met, so it dispatches cycle 2. Back to step 3.
@@ -126,9 +133,10 @@ git clone https://github.com/sandrods/trek-skill ~/.claude/skills/trek
 Then `/trek start` to cut a program, `/trek continue` to pick one up in a fresh session,
 `/trek handoff` before clearing a session.
 
-Requires the [Superpowers](https://github.com/obra/superpowers) skills —
-`brainstorming`, `writing-plans` and the executor skills — and uses Claude Code's
-`artifact-design` skill when authoring the board.
+Requires the [Superpowers](https://github.com/obra/superpowers) `brainstorming` skill,
+and uses Claude Code's `artifact-design` skill when authoring the board. Plans and
+builds use no Superpowers skill: the briefs for the implementer and the final review are
+in `templates/`.
 
 ## Where it came from
 
