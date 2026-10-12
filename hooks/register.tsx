@@ -155,7 +155,7 @@ export const register: Register = on => {
 
     const { Box, Text } = $.ui.resolve(e)
     return (
-      <Box flexDirection="column">
+      <Box flexDirection="column" borderStyle="round" borderColor="claude" paddingX={1}>
         {open.map(trek => {
           const lead = trek.lead && look(trek.lead.status)
           const steps = progress(trek)
