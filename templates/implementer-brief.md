@@ -15,7 +15,7 @@ Facts about systems this project does not own (Oracle, the legacy app, external
 services) go to `<findings path>`, dated and appended, as you learn them. A fact left
 only in your report is lost.
 
-Do not edit the plan, the trek record or the board. Do not provision databases
+Do not edit the plan or the trek record. Do not provision databases
 (`db:local`, `db:test:prepare`, `schema:load`); if the environment is broken, stop and
 report BLOCKED.
 

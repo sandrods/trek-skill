@@ -1,6 +1,6 @@
 ---
 name: trek
-description: Use when asked to start a program too large to finish in one brainstorm-plan-execute-merge cycle — e.g. `/trek start` — or when a brainstorm reports the scope needs decomposing before designing, when a cycle has transitioned (spec committed, plan committed, execution started, MR opened, merged, superseded) and the trek's record or published board is now stale, when a fact about an external system was learned mid-cycle and needs a durable place, when asked to continue or resume a program in a fresh session — e.g. `/trek continue` — or when about to clear or end a session with a program still in flight — e.g. `/trek handoff`.
+description: Use when asked to start a program too large to finish in one brainstorm-plan-execute-merge cycle — e.g. `/trek start` — or when a brainstorm reports the scope needs decomposing before designing, when a cycle has transitioned (spec committed, plan committed, execution started, MR opened, merged, superseded) and the trek's record is now stale, when a fact about an external system was learned mid-cycle and needs a durable place, when asked to continue or resume a program in a fresh session — e.g. `/trek continue` — or when about to clear or end a session with a program still in flight — e.g. `/trek handoff`.
 ---
 
 # Trek
@@ -44,7 +44,6 @@ of the repository, never chosen per program.
 docs/treks/<topic>/
   trek.md                        current state — the record
   log.md                         history — append-only
-  board.html                     the view, published as an artifact
   cycles/
     1-<cycle-slug>/              created at dispatch, one per cycle
       1-<cycle-slug>-spec.md     brainstorming's output
@@ -55,8 +54,8 @@ docs/treks/<topic>/
 
 - The record's own location is the trek folder, so paths inside it are relative to it:
   a cycle's spec is `cycles/1-<slug>/1-<slug>-spec.md`.
-- Files inside a cycle folder carry the folder's name as a prefix, so a path or a
-  board line names its cycle on its own.
+- Files inside a cycle folder carry the folder's name as a prefix, so a path names
+  its cycle on its own.
 - A cycle that splits gets `1a-<slug>/` and `1b-<slug>/`. Numbers are handles and
   are never reused or renumbered; a superseded cycle keeps its number and its folder.
 - Brainstorming has its own default path for single-cycle work. When dispatching it
@@ -72,7 +71,7 @@ Filled from `templates/trek.md`. Sections are fixed: header · why this cut · c
 rules · facts · open questions. No maintenance instructions inside the file; this
 skill holds them.
 
-- **Header:** program status (`open` · `closed`), start date, sources, board URL.
+- **Header:** program status (`open` · `closed`), start date, sources.
 - **Why this cut:** 2–4 sentences on these boundaries and the alternatives rejected.
 - **One entry per cycle, at cut resolution.** Status in the heading. Fields: goal in
   one sentence, scope, out, depends on, governing rules by handle, unknowns, done
@@ -84,7 +83,7 @@ skill holds them.
   question names its owner. Specs cite these by handle.
 - **Statuses:** `not started` · `spec` · `plan` · `executing` · `in review` · `done`
   · `superseded`. A status carries one sentence of why only when it surprises;
-  `superseded` always does, since without it the board reads it as a mistake.
+  `superseded` always does, since without it a reader takes it for a mistake.
   `superseded` is terminal and means the premise was invalidated, not that the work
   failed. It never blocks anything; cycles that depended on it get their `Depends on`
   re-cut, and that amendment is a log event.
@@ -108,20 +107,23 @@ line gets a correcting line above it. Always written in the same commit as the
 recorded late says so in the line ("missed update, caught at handoff") rather than
 carrying an invented earlier date.
 
-## `board.html` — the view
+## The status mod — the view
 
-A single page for the question "where are we?", published as a Claude artifact.
+The question "where are we?" is answered by a Claude Code mod that ships in this
+skill's folder (`.claude-plugin/`, `hooks/`) and draws from the records on disk of the
+checkout the session runs in: a band above the prompt for each open trek, and
+`/trek-status` for a pane with every cycle, the executing cycle's ledger and the open
+questions. There is nothing to publish or refresh: keeping the records current is
+keeping the view current.
 
-- **It contains no text that does not exist in `trek.md` or `log.md`.** A cycle card
-  is the cycle's name, status, goal sentence and why sentence, copied verbatim. The
-  ledger section renders the executing cycle's ledger table (task, status, commit),
-  and is absent when no cycle is executing. The history section renders `log.md`. The
-  blockers section renders open questions. A card that is too long means a `trek.md`
-  field is too long; fix the record.
-- **One URL for its whole life**, stored in the `trek.md` header. Every republish
-  passes it as `url:`; publishing without it forks a duplicate and strands everyone
-  holding the old link. Title and favicon never change.
-- **Authoring:** load the artifact-design skill before writing or restyling it.
+It parses these shapes, so they are kept exact:
+
+- the header's `**Status:** <open|closed>`;
+- cycle headings ``### <n>. <name> — `<status>` ``;
+- `- **Q<n>** (<owner>) — …` lines under `## Open questions` (a line whose text starts
+  `answered`, `closed`, `resolved` or `superseded` counts as closed);
+- the executing cycle's plan at `cycles/<n>-<slug>/<n>-<slug>-plan.md` (or the `plan`
+  path its `Artifacts` names when it has no folder), its table under `## Ledger`.
 
 ## `cycles/<n>-<slug>/` — the cycle folder
 
@@ -158,9 +160,8 @@ it understands the problem just enough to cut it, and stops there.
    is a design decision; get approval before writing.
 4. **Write `trek.md`** from the template, status `open`, and **`log.md`** with its
    first line, the cut.
-5. **Create the board**, publish it, write the returned URL into the header.
-6. **Commit** the folder.
-7. **STOP.** Do not dispatch cycle 1. Starting a cycle is a separate decision and a
+5. **Commit** the folder.
+6. **STOP.** Do not dispatch cycle 1. Starting a cycle is a separate decision and a
    separate brainstorm.
 
 ## Dispatching a Cycle
@@ -189,8 +190,8 @@ brainstorm only; the plan and the build follow this section.
      partner.
    - In one commit, set the finished row to `done` with its commit and any reported
      deviation in its note, and the next row to `running`. Then dispatch the next
-     implementer, and republish the board while it runs. Never commit while an
-     implementer is working in the same worktree: the two commits collide.
+     implementer. Never commit while an implementer is working in the same
+     worktree: the two commits collide.
 6. **Final review.** When every task row is `done`, dispatch one review agent briefed
    from `templates/final-review-brief.md` (opus) over the whole branch. Bring its
    findings to your human partner; the fixes they accept go to one implementer agent,
@@ -204,8 +205,8 @@ implementer's own tests, by your reading of each report, and finally by the revi
 
 ## Mode 2 — Update
 
-Invoked at a transition. `trek.md`, `log.md` and the board move together, **in the
-same commit as the work that caused the transition**, never separately.
+Invoked at a transition. `trek.md` and `log.md` move together, **in the same
+commit as the work that caused the transition**, never separately.
 
 | Moment | `trek.md` | `log.md` |
 |---|---|---|
@@ -216,7 +217,6 @@ same commit as the work that caused the transition**, never separately.
 | rule / fact / question added or superseded outside a merge | the line, or the handle's body replaced with its pointer | one line |
 | last cycle `done` or `superseded` | program status → `closed` | one line |
 
-Then refresh the board from the two files and republish with `url:`.
 
 **On close**, report — do not write — the rules and facts in `trek.md` that outlive
 the program. They are the raw material for a permanent feature document in the
@@ -264,10 +264,9 @@ is still in flight — report the discrepancy and ask.
    to the in-flight cycle's findings file. A pointer to a path outside the repo is
    dangling: copy the file into the trek folder, or state plainly why it is expendable.
 4. **Refresh the in-flight cycle's `Next` paragraph.** This is what makes resume
-   fast; the terminal summary in step 7 is not durable.
-5. **Republish the board** with `url:`.
-6. **Commit** the trek folder. **Verify** the tree is clean.
-7. **Report** what a fresh `/trek continue` will land on, and why.
+   fast; the terminal summary in step 6 is not durable.
+5. **Commit** the trek folder. **Verify** the tree is clean.
+6. **Report** what a fresh `/trek continue` will land on, and why.
 
 This is a safety net. Transitions are recorded when they happen (Mode 2); if handoff
 routinely finds drift, the in-the-moment discipline is what needs fixing.
@@ -316,19 +315,17 @@ transcript is not a record, run Mode 4.
 | Mistake | Consequence |
 |---|---|
 | Session cleared without a handoff | Next session resumes from stale records and redoes settled work |
-| Handoff moved a status on its own judgment | The board announces a cycle finished when it has not |
+| Handoff moved a status on its own judgment | The record announces a cycle finished when it has not |
 | Reason appended under a status instead of replacing it | Entry size tracks how often the cycle was re-decided, not what it is |
 | Cycle design written into `trek.md` | A pointer file nobody can afford to read on resume |
 | New decisions written into the brainstorm input | A frozen source becomes the only place the rules live, and rots |
 | Fact left in an implementer's report | Lost when the report is; the next cycle pays to rediscover it |
 | Plan written with code and test bodies | The plan becomes the build, costs more context than the build, and freezes choices the implementer should make |
-| Ledger row not updated after a task | Resume redoes a finished task, and the board shows the wrong progress |
+| Ledger row not updated after a task | Resume redoes a finished task, and the band shows the wrong progress |
 | Superseded cycle removed from the record | Numbers stop being handles; every citation of it dangles |
-| `superseded` without its why sentence | Reads as a mistake on the board |
-| Text on the board that is not in `trek.md` or `log.md` | A second record, and the wrong one |
-| Board republished without `url:` | Duplicate artifact; stakeholders keep the stale link |
-| Transition committed without `log.md` and the board | History has a hole; the visible answer is wrong |
+| `superseded` without its why sentence | Reads as a mistake |
+| Transition committed without `log.md` | History has a hole |
 | Spec or plan saved to the single-cycle default paths | The trek's work is scattered; resume cannot find the cycle's files |
-| Bare `plan.md` in every cycle folder | Paths and board lines stop naming their cycle |
+| Bare `plan.md` in every cycle folder | Paths stop naming their cycle, and the mod cannot find the ledger |
 | `Out` left empty | Cycle 1 quietly absorbs cycle 2 halfway through |
 | Detail questions asked during Start | You design cycle 3 before building cycle 1 |

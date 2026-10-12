@@ -1,7 +1,6 @@
 # Trek — <program>
 
 **Status:** open · **Started:** <date> · **Sources:** <inputs the cut was made from, as paths>
-**Board:** <artifact URL — every republish of `board.html` passes this as `url:`>
 
 ## Why this cut
 

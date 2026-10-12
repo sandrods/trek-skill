@@ -1,0 +1,6 @@
+{
+  "name": "trek",
+  "version": "0.1.0",
+  "description": "Shows the trek records of the current checkout: a band above the prompt and a /trek-status pane",
+  "types": "./types/index.d.ts"
+}
