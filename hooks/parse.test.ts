@@ -1,6 +1,6 @@
 import { expect, test } from 'claude-code/testing'
 
-import { joinPath, leadCycle, parseLedger, parseTrek, planPath } from './parse'
+import { joinPath, leadCycle, parseLedger, parseTrek, planPath, trekBranch } from './parse'
 
 const TREK = `# Trek — as marcações na app
 
@@ -61,7 +61,6 @@ test('reads the header, the cycles and the open questions of trek.md', () => {
     ['Q1', 'Sandro, with SRH/DBA', true],
     ['Q2', 'Sandro', false],
   ])
-  expect(trek.branches).toEqual(['incluir-marcacao'])
   expect(trek.questions[0]?.text).toBe('production `INSERT` on a table; gates cycles 2 and 4.')
 })
 
@@ -90,4 +89,12 @@ test('reads the ledger table, and null when the plan has none', () => {
     ['R', 'pending', '—'],
   ])
   expect(parseLedger('# plan\n\n## Tasks\n')).toBeNull()
+})
+
+test('reads only treks/<topic>/<main|cycle> as a trek branch', () => {
+  expect(trekBranch('treks/marcacoes-na-app/main')).toEqual({ topic: 'marcacoes-na-app' })
+  expect(trekBranch('treks/marcacoes-na-app/2-registro')).toEqual({ topic: 'marcacoes-na-app', cycle: '2-registro' })
+  expect(trekBranch('feature/x')).toBeUndefined()
+  expect(trekBranch('treks/a/b/c')).toBeUndefined()
+  expect(trekBranch(undefined)).toBeUndefined()
 })

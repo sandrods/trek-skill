@@ -53,8 +53,9 @@ superseded item keeps its handle with a one-line pointer to what replaced it.
 
 **The status mod** answers "where are we?" without a second record. The skill's folder
 is also a Claude Code plugin: it reads the records of the checkout a session runs in and
-draws a band above the prompt for the trek the checked-out branch belongs to (cycle track, lead cycle, ledger
-progress, open questions), and `/trek-status` opens a pane with every cycle, the
+draws a band above the prompt. On a `treks/<topic>/…` branch it shows that trek (cycle
+track, lead cycle, ledger progress, open questions); on any other branch, one line per
+open trek, to choose where to go. `/trek-status` opens a pane with every cycle, the
 executing cycle's ledger and the open questions. It draws from the files, so it cannot
 disagree with them.
 
@@ -95,7 +96,7 @@ slip. If it keeps finding drift, ask for the update at the moment of the transit
 2. In a fresh session, `/trek continue`. Claude dispatches cycle 1: creates its folder,
    runs the brainstorm. Spec committed, record updated.
 3. You approve the spec. Claude writes the short plan. Plan committed, record updated.
-4. You approve the plan. Claude cuts the branch and dispatches one implementer agent per
+4. You approve the plan. Claude cuts `treks/<topic>/<n>-<slug>` and dispatches one implementer agent per
    task, ticking the ledger after each. The main session reads
    reports, not diffs. Facts learned go to the cycle's findings file.
 5. Context runs out mid-plan. `/trek handoff`. `/clear`. `/trek continue`. Claude lands

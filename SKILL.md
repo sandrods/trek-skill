@@ -65,6 +65,20 @@ docs/treks/<topic>/
   ever written to it after the brainstorm consumed it.** An input outside the repo or
   in a gitignored path is copied into the trek folder first, so the citation resolves.
 
+### Branches
+
+Every branch of a trek lives under `treks/<topic>/`, mirroring its folder:
+
+| Branch | What it is |
+|---|---|
+| `treks/<topic>/main` | the **trek line**: the records, and every cycle once merged |
+| `treks/<topic>/<n>-<slug>` | one cycle's branch, named as its folder, cut from the trek line |
+
+- Only branches under `treks/` are trek branches; no other name is ever read as one.
+- One worktree per cycle branch, so cycles run side by side. Folder names carry no
+  meaning.
+- The trek line merges into the project's own main line as the project does it.
+
 ## `trek.md` — the record
 
 Filled from `templates/trek.md`. Sections are fixed: header · why this cut · cycles ·
@@ -111,9 +125,9 @@ carrying an invented earlier date.
 
 The question "where are we?" is answered by a Claude Code mod that ships in this
 skill's folder (`.claude-plugin/`, `hooks/`) and draws from the records on disk of the
-checkout the session runs in: a band above the prompt for the open trek whose record
-names the checked-out branch, and
-`/trek-status` for a pane with every cycle, the executing cycle's ledger and the open
+checkout the session runs in, and from the checked-out branch's name (see Branches): on a
+trek branch, a band above the prompt for that trek, its cycle leading; on any other
+branch, one band line per open trek, to choose where to go. `/trek-status` opens a pane with every cycle, the executing cycle's ledger and the open
 questions. There is nothing to publish or refresh: keeping the records current is
 keeping the view current.
 
@@ -124,9 +138,7 @@ It parses these shapes, so they are kept exact:
 - `- **Q<n>** (<owner>) — …` lines under `## Open questions` (a line whose text starts
   `answered`, `closed`, `resolved` or `superseded` counts as closed);
 - the executing cycle's plan at `cycles/<n>-<slug>/<n>-<slug>-plan.md` (or the `plan`
-  path its `Artifacts` names when it has no folder), its table under `## Ledger`;
-- ``branch `<name>` `` in `Artifacts` (the trek line included), which ties a checkout to
-  its trek.
+  path its `Artifacts` names when it has no folder), its table under `## Ledger`.
 
 ## `cycles/<n>-<slug>/` — the cycle folder
 
@@ -161,10 +173,12 @@ it understands the problem just enough to cut it, and stops there.
    question needing implementation detail belongs to that cycle's own brainstorm.
 3. **Present 2–3 candidate cuts** with trade-offs and a recommendation. Where you cut
    is a design decision; get approval before writing.
-4. **Write `trek.md`** from the template, status `open`, and **`log.md`** with its
+4. **Cut the trek line** `treks/<topic>/main` from the project's main line, in a
+   worktree.
+5. **Write `trek.md`** from the template, status `open`, and **`log.md`** with its
    first line, the cut.
-5. **Commit** the folder.
-6. **STOP.** Do not dispatch cycle 1. Starting a cycle is a separate decision and a
+6. **Commit** the folder on the trek line.
+7. **STOP.** Do not dispatch cycle 1. Starting a cycle is a separate decision and a
    separate brainstorm.
 
 ## Dispatching a Cycle
@@ -182,8 +196,8 @@ brainstorm only; the plan and the build follow this section.
 4. **Plan.** Once the spec is approved, write `<n>-<slug>-plan.md` yourself from
    `templates/plan.md`. Commit it, run Mode 2 (status → `plan`), and ask your human
    partner to approve it.
-5. **Build.** Once the plan is approved, cut the branch from the trek line (in a
-   worktree), run Mode 2 (→ `executing`), and work the ledger top to bottom:
+5. **Build.** Once the plan is approved, cut `treks/<topic>/<n>-<slug>` from the trek
+   line in a worktree of its own, run Mode 2 (→ `executing`), and work the ledger top to bottom:
    - Dispatch **one fresh implementer agent per task**, briefed from
      `templates/implementer-brief.md` (sonnet unless the project says otherwise).
      Never implement a task in the main session: keeping its context light is the

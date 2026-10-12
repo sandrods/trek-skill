@@ -1,6 +1,6 @@
 # Cycle <n> — <name> — plan
 
-**Spec:** `<n>-<slug>-spec.md` · **Branch:** `<branch>`, cut from `<trek line>` at `<sha>`
+**Spec:** `<n>-<slug>-spec.md` · **Branch:** `treks/<topic>/<n>-<slug>`, cut from `treks/<topic>/main` at `<sha>`
 **Findings:** `<n>-<slug>-findings.md`
 
 <One or two sentences: the order of the tasks and why. Nothing the spec already says.>

@@ -2,7 +2,7 @@ import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register } from 'claude-code'
 
 import type { Cycle, LedgerRow, Trek } from '../types'
-import { joinPath, leadCycle, parseLedger, parseTrek, planPath } from './parse'
+import { joinPath, leadCycle, parseLedger, parseTrek, planPath, trekBranch } from './parse'
 
 const PANE = 'trek-status'
 const POLL_MS = 3000
@@ -11,7 +11,7 @@ const treks = atom({ plugin: 'trek', key: 'treks' } as const, [])
 // Reads every trek folder under the root. A folder without a readable trek.md is skipped.
 async function load($: EngineInterface): Promise<Trek[]> {
   const root = await trekRoot($)
-  const branch = await currentBranch($)
+  const branch = trekBranch(await currentBranch($))
   const entries = await $.fs.list(root).catch(() => [])
   const found: Trek[] = []
 
@@ -21,9 +21,13 @@ async function load($: EngineInterface): Promise<Trek[]> {
     if (typeof text !== 'string') continue
 
     const record = parseTrek(text)
-    const lead = leadCycle(record.cycles)
-    const isCurrent = branch !== undefined && record.branches.includes(branch)
-    const trek: Trek = { ...record, topic: entry.name, lead, isCurrent }
+    const isCurrent = branch?.topic === entry.name
+    // On a cycle branch that cycle leads; elsewhere the furthest-along one in flight.
+    const own = isCurrent && branch?.cycle !== undefined
+      ? record.cycles.find(c => branch.cycle?.split('-')[0] === c.id)
+      : undefined
+    const lead = own ?? leadCycle(record.cycles)
+    const trek: Trek = { ...record, topic: entry.name, lead, isCurrent, isLeadCheckedOut: own !== undefined }
 
     if (lead?.status === 'executing') {
       const rel = planPath(lead)
@@ -83,7 +87,7 @@ function cyclePhrase(trek: Trek): string {
   if (lead === undefined) return 'no cycle in flight'
 
   const same = trek.cycles.filter(c => c.status === lead.status).length
-  return same > 1 ? `${same} cycles ${lead.status}` : `cycle ${lead.id} ${lead.status}`
+  return same > 1 && !trek.isLeadCheckedOut ? `${same} cycles ${lead.status}` : `cycle ${lead.id} ${lead.status}`
 }
 
 type Progress = { done: number; total: number; current?: LedgerRow; label: string }
@@ -131,7 +135,9 @@ export const register: Register = on => {
   }).catch(($, e, next) => next(e))
 
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
-    const open = (await read($, treks)).filter(t => t.status === 'open' && t.isCurrent)
+    const all = (await read($, treks)).filter(t => t.status === 'open')
+    const current = all.filter(t => t.isCurrent)
+    const open = current.length > 0 ? current : all
     if (e.props.hasSurvey || open.length === 0) return next(e)
 
     const { Box, Text } = $.ui.resolve(e)

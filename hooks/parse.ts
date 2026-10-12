@@ -15,7 +15,6 @@ export function parseTrek(text: string): TrekRecord {
     status,
     cycles: parseCycles(sections.get('Cycles') ?? ''),
     questions: parseQuestions(sections.get('Open questions') ?? ''),
-    branches: [...text.matchAll(/branch\s+`([^`]+)`/g)].map(m => m[1] ?? ''),
   }
 }
 
@@ -29,6 +28,14 @@ export function parseLedger(text: string): LedgerRow[] | null {
     .map(line => line.split('|').slice(1, -1).map(cell => cell.trim()))
     .filter(cells => cells.length >= 3 && cells[0] !== '#' && !/^-+$/.test(cells[0] ?? ''))
     .map(([id = '', task = '', status = '', commit = '', note = '']) => ({ id, task, status, commit, note }))
+}
+
+// A trek branch is `treks/<topic>/main` (the trek line) or `treks/<topic>/<n>-<slug>`
+// (a cycle); no other name is read as one.
+export function trekBranch(branch: string | undefined): { topic: string; cycle?: string } | undefined {
+  const match = branch?.match(/^treks\/([^/]+)\/([^/]+)$/)
+  if (!match?.[1] || !match[2]) return undefined
+  return match[2] === 'main' ? { topic: match[1] } : { topic: match[1], cycle: match[2] }
 }
 
 // The cycle the band and the pane lead with, or undefined when none is in flight.
