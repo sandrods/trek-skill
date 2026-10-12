@@ -153,7 +153,12 @@ export const register: Register = on => {
     const open = inView(await read($, treks))
     if (e.props.hasSurvey || open.length === 0) return next(e)
 
-    const { Box, Text } = $.ui.resolve(e)
+    const { Box, Button, Text } = $.ui.resolve(e)
+    // A click on a line opens the pane, as /trek-status does.
+    const openPane = async () => {
+      await update($, showAll, () => false)
+      await $.ui.open({ id: PANE, title: 'Treks' })
+    }
     return (
       <Box flexDirection="column" borderStyle="round" borderColor="claude" paddingX={1}>
         {open.map(trek => {
@@ -162,6 +167,7 @@ export const register: Register = on => {
           const questions = trek.questions.filter(q => q.isOpen).length
           const [filled, empty] = bar(steps?.done ?? 0, steps?.total ?? 0)
           return (
+            <Button key={`band-${trek.topic}`} plain onPress={() => void openPane()}>
             <Text wrap="truncate-end">
               <Text color="claude" bold>{trek.topic}</Text>{'  '}
               {trek.cycles.map(c => (
@@ -178,6 +184,7 @@ export const register: Register = on => {
               )}
               {questions > 0 && <Text color="warning">{'  '}⚑ {questions} open Q</Text>}
             </Text>
+            </Button>
           )
         })}
       </Box>
