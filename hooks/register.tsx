@@ -7,6 +7,15 @@ import { joinPath, leadCycle, parseLedger, parseTrek, planPath, trekBranch } fro
 const PANE = 'trek-status'
 const POLL_MS = 3000
 const treks = atom({ plugin: 'trek', key: 'treks' } as const, [])
+const showAll = atom({ plugin: 'trek', key: 'showAll' } as const, false)
+
+// What the band and, without --all, the pane show: the trek of the checked-out branch,
+// or every open trek when the branch belongs to none.
+function inView(list: Trek[]): Trek[] {
+  const open = list.filter(t => t.status === 'open')
+  const current = open.filter(t => t.isCurrent)
+  return current.length > 0 ? current : open
+}
 
 // Reads every trek folder under the root. A folder without a readable trek.md is skipped.
 // Paths start from the session's root, which follows a move into a worktree.
@@ -117,7 +126,7 @@ export const register: Register = on => {
   on('session.start', async ($, e, next) => {
     await $.command.register({
       name: 'trek-status',
-      description: 'Show the treks of this checkout: cycles, the executing ledger, open questions',
+      description: 'Show this branch\'s trek (or every open one off a trek branch); --all for every trek',
     })
     await refresh($)
     $.clock.every(POLL_MS, () => void refresh($))
@@ -125,7 +134,8 @@ export const register: Register = on => {
     return next(e)
   })
 
-  on('command.run', { command: 'trek-status' }, async $ => {
+  on('command.run', { command: 'trek-status' }, async ($, e) => {
+    await update($, showAll, () => /(^|\s)--all(\s|$)/.test(e.args))
     await refresh($)
     await $.ui.open({ id: PANE, title: 'Treks' })
 
@@ -140,9 +150,7 @@ export const register: Register = on => {
   }).catch(($, e, next) => next(e))
 
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
-    const all = (await read($, treks)).filter(t => t.status === 'open')
-    const current = all.filter(t => t.isCurrent)
-    const open = current.length > 0 ? current : all
+    const open = inView(await read($, treks))
     if (e.props.hasSurvey || open.length === 0) return next(e)
 
     const { Box, Text } = $.ui.resolve(e)
@@ -178,10 +186,11 @@ export const register: Register = on => {
 
   on('ui.render', { component: 'Pane', requestId: PANE }, async ($, e) => {
     const { Box, Text } = $.ui.resolve(e)
-    const list = await read($, treks)
+    const loaded = await read($, treks)
+    const list = (await read($, showAll)) ? loaded : inView(loaded)
     const width = Math.max(20, e.props.bodyColumns - 4)
 
-    if (list.length === 0) return <Text dimColor>No trek records in this checkout.</Text>
+    if (list.length === 0) return <Text dimColor>No open trek in this checkout; /trek-status --all shows closed ones too.</Text>
 
     const chip = (status: string) => (
       <Text backgroundColor={look(status).color} color="inverseText" bold>

@@ -55,9 +55,9 @@ superseded item keeps its handle with a one-line pointer to what replaced it.
 is also a Claude Code plugin: it reads the records of the checkout a session runs in and
 draws a band above the prompt. On a `treks/<topic>/…` branch it shows that trek (cycle
 track, lead cycle, ledger progress, open questions); on any other branch, one line per
-open trek, to choose where to go. `/trek-status` opens a pane with every cycle, the
-lead cycle's ledger (from plan on) and the open questions. It draws from the files, so it cannot
-disagree with them.
+open trek, to choose where to go. `/trek-status` opens a pane for the same treks, with
+every cycle, the lead cycle's ledger and the open questions; `--all` shows every trek.
+It draws from the files, so it cannot disagree with them.
 
 **The cycle folder** holds everything cycle-scoped. The findings file is created empty
 at dispatch and named in every implementer brief, so a fact about a legacy database or

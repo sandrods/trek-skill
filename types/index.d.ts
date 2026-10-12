@@ -21,6 +21,7 @@ export type Trek = TrekRecord & {
 
 declare module 'claude-code' {
   interface PluginState {
-    trek: { treks: Trek[] }
+    // `showAll`: the pane was opened with `/trek-status --all`.
+    trek: { treks: Trek[]; showAll: boolean }
   }
 }

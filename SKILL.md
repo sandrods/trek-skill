@@ -132,8 +132,10 @@ The question "where are we?" is answered by a Claude Code mod that ships in this
 skill's folder (`.claude-plugin/`, `hooks/`) and draws from the records on disk of the
 checkout the session runs in, and from the checked-out branch's name (see Branches): on a
 trek branch, a band above the prompt for that trek, its cycle leading; on any other
-branch, one band line per open trek, to choose where to go. `/trek-status` opens a pane with every cycle, the lead cycle's ledger (from plan on) and the open
-questions. There is nothing to publish or refresh: keeping the records current is
+branch, one band line per open trek, to choose where to go. `/trek-status` opens a pane
+for the same treks, with every cycle, the lead cycle's ledger nested under it (from
+`plan` on) and the open questions; `/trek-status --all` shows every trek, closed ones
+included. There is nothing to publish or refresh: keeping the records current is
 keeping the view current.
 
 It parses these shapes, so they are kept exact:
