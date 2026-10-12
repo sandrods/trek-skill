@@ -75,8 +75,13 @@ Every branch of a trek lives under `treks/<topic>/`, mirroring its folder:
 | `treks/<topic>/<n>-<slug>` | one cycle's branch, named as its folder, cut from the trek line |
 
 - Only branches under `treks/` are trek branches; no other name is ever read as one.
-- One worktree per cycle branch, so cycles run side by side. Folder names carry no
-  meaning.
+- One worktree per branch, so cycles run side by side. A new one goes at
+  `.claude/worktrees/<branch>` (`.claude/worktrees/treks/<topic>/main`); an existing
+  one is found with `git worktree list`, wherever it sits.
+- **The session works in the branch's worktree.** Whenever this skill acts on a trek
+  branch, it first moves the session there: find the worktree that has the branch
+  checked out, create it if none does, then switch with EnterWorktree (`path`). Reaching
+  into another folder by path leaves the session — and the status band — where it was.
 - The trek line merges into the project's own main line as the project does it.
 
 ## `trek.md` — the record
@@ -173,8 +178,8 @@ it understands the problem just enough to cut it, and stops there.
    question needing implementation detail belongs to that cycle's own brainstorm.
 3. **Present 2–3 candidate cuts** with trade-offs and a recommendation. Where you cut
    is a design decision; get approval before writing.
-4. **Cut the trek line** `treks/<topic>/main` from the project's main line, in a
-   worktree.
+4. **Cut the trek line** `treks/<topic>/main` from the project's main line, in its
+   worktree, and move the session there (see Branches).
 5. **Write `trek.md`** from the template, status `open`, and **`log.md`** with its
    first line, the cut.
 6. **Commit** the folder on the trek line.
@@ -197,7 +202,7 @@ brainstorm only; the plan and the build follow this section.
    `templates/plan.md`. Commit it, run Mode 2 (status → `plan`), and ask your human
    partner to approve it.
 5. **Build.** Once the plan is approved, cut `treks/<topic>/<n>-<slug>` from the trek
-   line in a worktree of its own, run Mode 2 (→ `executing`), and work the ledger top to bottom:
+   line in a worktree of its own, move the session there, run Mode 2 (→ `executing`), and work the ledger top to bottom:
    - Dispatch **one fresh implementer agent per task**, briefed from
      `templates/implementer-brief.md` (sonnet unless the project says otherwise).
      Never implement a task in the main session: keeping its context light is the
@@ -247,7 +252,9 @@ Invoked with `continue` (also `resume` / `retomar`, or any ask to pick a program
 up in a fresh session). List the trek root; if more than one trek is `open`, ask
 which. Read that trek's `trek.md` — only `trek.md`; open a cycle folder only for the
 cycle you land on. Act on the **highest row of this table that any cycle matches** —
-an in-flight cycle always outranks starting a new one:
+an in-flight cycle always outranks starting a new one — and **move the session first**
+(see Branches): to the executing cycle's branch for `executing`, to the trek line for
+every other row:
 
 | Highest cycle status found | Next action |
 |---|---|
