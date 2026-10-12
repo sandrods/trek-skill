@@ -31,7 +31,8 @@ async function load($: EngineInterface): Promise<Trek[]> {
     const lead = own ?? leadCycle(record.cycles)
     const trek: Trek = { ...record, topic: entry.name, lead, isCurrent, isLeadCheckedOut: own !== undefined }
 
-    if (lead?.status === 'executing') {
+    // A plan's ledger is shown from the moment it is committed, not only once executing.
+    if (lead?.status === 'plan' || lead?.status === 'executing') {
       const rel = planPath(lead)
       if (rel !== undefined) {
         trek.planFile = joinPath(dir, rel)
@@ -95,11 +96,13 @@ function cyclePhrase(trek: Trek): string {
 type Progress = { done: number; total: number; current?: LedgerRow; label: string }
 
 function progress(trek: Trek): Progress | undefined {
-  if (trek.lead?.status !== 'executing') return undefined
+  const status = trek.lead?.status
+  if (status !== 'plan' && status !== 'executing') return undefined
   if (trek.ledger === undefined) return { done: 0, total: 0, label: 'plan not found' }
   if (trek.ledger === null) return { done: 0, total: 0, label: 'no ledger' }
 
   const rows = trek.ledger
+  if (status === 'plan') return { done: 0, total: rows.length, current: rows[0], label: `${rows.length} tasks planned` }
   const done = rows.filter(r => r.status === 'done').length
   const current = rows.find(r => r.status !== 'done')
   const label = current === undefined

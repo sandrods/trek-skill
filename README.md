@@ -56,7 +56,7 @@ is also a Claude Code plugin: it reads the records of the checkout a session run
 draws a band above the prompt. On a `treks/<topic>/…` branch it shows that trek (cycle
 track, lead cycle, ledger progress, open questions); on any other branch, one line per
 open trek, to choose where to go. `/trek-status` opens a pane with every cycle, the
-executing cycle's ledger and the open questions. It draws from the files, so it cannot
+lead cycle's ledger (from plan on) and the open questions. It draws from the files, so it cannot
 disagree with them.
 
 **The cycle folder** holds everything cycle-scoped. The findings file is created empty
