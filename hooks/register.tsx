@@ -9,9 +9,11 @@ const POLL_MS = 3000
 const treks = atom({ plugin: 'trek', key: 'treks' } as const, [])
 
 // Reads every trek folder under the root. A folder without a readable trek.md is skipped.
+// Paths start from the session's root, which follows a move into a worktree.
 async function load($: EngineInterface): Promise<Trek[]> {
-  const root = await trekRoot($)
-  const branch = trekBranch(await currentBranch($))
+  const base = await $.session.root()
+  const root = await trekRoot($, base)
+  const branch = trekBranch(await currentBranch($, base))
   const entries = await $.fs.list(root).catch(() => [])
   const found: Trek[] = []
 
@@ -43,10 +45,10 @@ async function load($: EngineInterface): Promise<Trek[]> {
 }
 
 // The checked-out branch, read from HEAD; `.git` is a file pointing at the gitdir in a worktree.
-async function currentBranch($: EngineInterface): Promise<string | undefined> {
-  let head = await $.fs.read('.git/HEAD').catch(() => undefined)
+async function currentBranch($: EngineInterface, base: string): Promise<string | undefined> {
+  let head = await $.fs.read(`${base}/.git/HEAD`).catch(() => undefined)
   if (typeof head !== 'string') {
-    const pointer = await $.fs.read('.git').catch(() => undefined)
+    const pointer = await $.fs.read(`${base}/.git`).catch(() => undefined)
     const gitdir = typeof pointer === 'string' ? pointer.match(/^gitdir:\s*(.+)$/m)?.[1]?.trim() : undefined
     if (gitdir === undefined) return undefined
     head = await $.fs.read(`${gitdir}/HEAD`).catch(() => undefined)
@@ -55,10 +57,10 @@ async function currentBranch($: EngineInterface): Promise<string | undefined> {
 }
 
 // docs/treks/ unless the project's CLAUDE.md states `Trek root: <path>`.
-async function trekRoot($: EngineInterface): Promise<string> {
-  const claude = await $.fs.read('CLAUDE.md').catch(() => '')
+async function trekRoot($: EngineInterface, base: string): Promise<string> {
+  const claude = await $.fs.read(`${base}/CLAUDE.md`).catch(() => '')
   const named = typeof claude === 'string' ? claude.match(/Trek root:\s*`?([^`\s]+)`?/)?.[1] : undefined
-  return (named ?? 'docs/treks').replace(/\/$/, '')
+  return joinPath(base, (named ?? 'docs/treks').replace(/\/$/, ''))
 }
 
 async function refresh($: EngineInterface): Promise<void> {
